@@ -18,7 +18,11 @@ class Notification(Base):
         nullable=False,
         index=True
         )
-
+    email: Mapped[str] = mapped_column(
+            Text, 
+            unique=True, 
+            nullable=False
+            )
     message: Mapped[str] = mapped_column(
         Text,
         nullable=False
