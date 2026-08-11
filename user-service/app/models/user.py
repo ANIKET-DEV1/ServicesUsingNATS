@@ -4,7 +4,7 @@ import enum
 from datetime import datetime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import func, Text, String, Integer, ForeignKey, Boolean, UUID,Enum
-from ..database.db import Base
+from ..database.connection import Base
 
 class User(Base):
     __tablename__ = "users"
