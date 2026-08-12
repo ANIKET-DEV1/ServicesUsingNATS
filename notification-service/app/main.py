@@ -1,10 +1,22 @@
-from fastapi import FastAPI
+import asyncio
 
-from .messaging import consumers
+from app.messaging.nats_client import (
+    connect_to_nats,
+    subscribe_to_events,
+)
 
-app = FastAPI(title="notification-service")
+
+async def start_notification_service():
+
+    nc = await connect_to_nats()
+
+    await subscribe_to_events(nc)
+
+    print("Notification Service is running...")
+
+    while True:
+        await asyncio.sleep(1)
 
 
-@app.get("/")
-async def root():
-    return {"service": "notification-service", "status": "ok"}
+if __name__ == "__main__":
+    asyncio.run(start_notification_service())

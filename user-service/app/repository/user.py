@@ -32,7 +32,10 @@ async def register_user(db: AsyncSession, user_data: user_schema.UserCreate)->mo
         await db.commit()
         await db.refresh(db_user)
         
-        return  db_user
+        return  {
+            "user_id":db_user.id,
+            "email":db_user.email
+        }
     except IntegrityError:
         await db.rollback()
         raise HTTPException(

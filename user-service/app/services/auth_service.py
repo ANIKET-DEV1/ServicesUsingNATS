@@ -24,7 +24,7 @@ class for_Auth(BaseRepository):
     async def create_user(self,cred: user.UserCreate):
         data = await crud_auth.register_user(self.db,user_data=cred)
         
-        return {"message":"register Successfull"}
+        return data
 
 
 
