@@ -1,5 +1,6 @@
 import nats
 import json
+from ..schemas.event import EventEnvelope
 
 NATS_URL = "nats://localhost:4222"
 
@@ -10,20 +11,16 @@ async def connect_to_nats():
     return nc
 
 
-
-async def publish_user_registered(nc, user_id: str, email: str):
-
-    event = {
-        "event_type": "user.registered",
-        "user_id": user_id,
-        "email": email,
-    }
-
+async def publish_event(
+    nc,
+    subject: str,
+    event: EventEnvelope,
+):
     await nc.publish(
-        "user.registered",
-        json.dumps(event).encode()
+        subject,
+        event.model_dump_json().encode()
     )
 
     await nc.flush()
 
-    print("Published user.registered event")
+    print(f"Published event: {subject}")

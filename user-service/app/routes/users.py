@@ -5,10 +5,13 @@ from typing import Annotated
 from fastapi.responses import JSONResponse
 from ..models.user import User
 from ..schemas import auth as user
+from ..schemas.event import EventEnvelope
 from ..services import jwt_handler as jwthandler
 from ..database.session import get_db
 from ..services.auth_service import for_Auth
-from ..messaging.nats_client import publish_user_registered
+from ..repository.user import update_verify_email
+from ..services.email_verification import create_email_verification_token,verify_email_token
+from ..messaging.nats_client import publish_event
 auth = APIRouter()
 
 @auth.post("/login")
@@ -28,12 +31,20 @@ async def register(request: Request,
     data = await auth_repo.create_user(cred)
     if not data:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND ,detail="Registration failed. Please check your details and try again.")
-    await publish_user_registered(
+    token=create_email_verification_token(data={"user_id":str(data["user_id"])})
+    await publish_event(
         request.app.state.nats,
-        str(data['user_id']),
-        data['email']
+        EventEnvelope(
+            event_type="user.registered",
+            payload={
+                "token":token,
+                "url":"http://localhost:8001/verify-email?token={token}",
+                "email":data["email"],
+                "message":"register successfull , Email verify"
+            }
+        )
     )
-    return {"message": "Registration successful."}
+    return {"message": "Registration successful. Please Verify You Email"}
 
 @auth.get("/me")
 def getuser(request: Request,
@@ -43,6 +54,23 @@ def getuser(request: Request,
         "authenticated": True,
         "user":current_user
     }
+
+@auth.get("/verify-email")
+async def verify_email(request: Request,
+                       response:Response,
+    token: str = Query(..., description="The cryptographic token sent via email"),
+    db: AsyncSession = Depends(get_db)
+):
+    user_id=verify_email_token(token)
+    if not user_id:
+        raise HTTPException(status_code=401,detail="The verification link is invalid or has expired. Please request a new one.")
+    
+    result = await update_verify_email(db,user_id) 
+    if not result:
+        raise HTTPException(status_code=500,detail="Failed to verify email address. Account may already be verified or user does not exist.")
+    
+    return {"message": "Successfully verified email address."}
+
 
     
 

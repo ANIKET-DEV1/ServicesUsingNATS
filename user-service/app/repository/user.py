@@ -100,6 +100,25 @@ async def get_user(db:AsyncSession,user_id:uuid.UUID):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Database error occurred while fetching user details."
         )
+
+async def update_verify_email(db:AsyncSession,user_id:uuid.UUID):
+    try:
+        result = await db.execute(select(models.User).where(models.User.id == user_id))
+        user = result.scalar_one_or_none()
+        if not user:
+            raise HTTPException(status_code=404,detail="User account not found.")
+        if user.is_verified:
+            raise HTTPException(status_code=200,detail="This account has already been verified.")
+        user.is_verified = True
+        await db.commit()
+        return user
+    
+    except Exception as e:
+        await db.rollback()
+        raise
+    except SQLAlchemyError:
+        await db.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail="Database error occurred while updating email verification status.")
     
 
 

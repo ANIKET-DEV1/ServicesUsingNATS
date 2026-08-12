@@ -17,13 +17,9 @@ async def lifespan(app: FastAPI):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-
     nc = await connect_to_nats()
-
     app.state.nats = nc
-
     yield
-
     await nc.close()
 
 
@@ -35,7 +31,6 @@ app.include_router(
     prefix="/users",
     tags=["Users"]
 )
-
 
 @app.get("/health")
 def health():
