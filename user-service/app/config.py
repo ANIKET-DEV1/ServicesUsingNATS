@@ -7,7 +7,9 @@ APP_DIR = Path(__file__).resolve().parent.parent
 
 class app_config(BaseSettings):
     user_database_url:SecretStr
-
+    secret_key:SecretStr
+    algorithms:SecretStr
+    ACCESS_TOKEN_EXPIRE_MINUTE : int
     model_config=SettingsConfigDict(env_file=".env", extra="ignore")
 
 
