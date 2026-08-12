@@ -36,10 +36,7 @@ def getuser(request: Request,
             current_user:User=Depends(jwthandler.get_current_user)):
     return {
         "authenticated": True,
-        "user": {
-            "username": current_user.username,
-            "email": current_user.email
-        }
+        "user":current_user
     }
 
     

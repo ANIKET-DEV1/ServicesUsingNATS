@@ -54,8 +54,6 @@ async def verify_token(token: str ,credentials_exception) -> TokenData:
         raise credentials_exception
 
 
-
-
 async def get_current_user(
     request: Request,
     token: Annotated[str | None, Depends(api_key_header_scheme)], 
@@ -69,7 +67,6 @@ async def get_current_user(
     
     if not token:
         raise credentials_exception
-
     token_data =await verify_token(token, credentials_exception)
     
     try:
@@ -77,7 +74,6 @@ async def get_current_user(
     except ValueError:
         raise credentials_exception
 
-    
     user =await get_user(db=db,user_id=user_uuid)
     if user is None:
         raise credentials_exception  
