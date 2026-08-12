@@ -1,7 +1,7 @@
 from ..repository.base import BaseRepository
 from fastapi import HTTPException,status,Response
 from ..schemas import auth as user
-import jwt_handler  as jwthandler
+from . import jwt_handler as jwthandler
 from ..repository import user as crud_auth 
 from ..models.user import User
 from ..config import get_config

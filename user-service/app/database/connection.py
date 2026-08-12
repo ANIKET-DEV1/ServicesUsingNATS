@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.orm import DeclarativeBase
-from config import get_config
+from ..config import get_config
 
 settings = get_config()
 db_url = settings.user_database_url.get_secret_value()

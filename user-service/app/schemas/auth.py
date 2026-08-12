@@ -30,3 +30,6 @@ class UserResponse(BaseSchema):
     username: str
     email: EmailStr
     created_at: datetime
+
+class ResetPasswordRequest(BaseModel):
+    email: EmailStr = Field(..., description="Email address of the account to reset")

@@ -79,9 +79,9 @@ async def login(db:AsyncSession,user_data:user_schema.UserLogin):
             detail="Database error occurred during user authentication."
         )
     
-async def get_user(db:AsyncSession,email:user_schema.ResetPasswordRequest):
+async def get_user(db:AsyncSession,user_id:uuid.UUID):
     try :
-        result = await db.execute(select(models.User).where(models.User.email == email.email))
+        result = await db.execute(select(models.User).where(models.User.id == user_id))
         user = result.scalar_one_or_none()
         if not user:
             raise HTTPException(
@@ -89,7 +89,9 @@ async def get_user(db:AsyncSession,email:user_schema.ResetPasswordRequest):
                 detail="No account found with the provided email address."
             )
 
-        return user
+        return {"username":user.username,
+                "email":user.email,
+                "is_verified":user.is_verified}
     except SQLAlchemyError:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

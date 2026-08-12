@@ -11,7 +11,8 @@ class app_config(BaseSettings):
     algorithms:SecretStr
     ACCESS_TOKEN_EXPIRE_MINUTE : int
     model_config=SettingsConfigDict(env_file=".env", 
-        env_file_encoding="utf-8")
+        env_file_encoding="utf-8",
+        extra="ignore")
 
 
 def get_config() -> app_config:
