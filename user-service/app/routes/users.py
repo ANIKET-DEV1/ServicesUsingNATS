@@ -3,13 +3,13 @@ from sqlalchemy.ext.asyncio import  AsyncSession
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from typing import Annotated
 from fastapi.responses import JSONResponse
-from pydantic import EmailStr
 from ..models.user import User
 from ..schemas import auth as user
 from ..services import jwt_handler as jwthandler
 from ..database.session import get_db
 from ..services.auth_service import for_Auth
-auth = APIRouter(prefix="/user", tags=["user-services"])
+
+auth = APIRouter()
 
 @auth.post("/login")
 async def login(request: Request, 
