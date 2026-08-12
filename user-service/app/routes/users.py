@@ -30,3 +30,17 @@ async def register(request: Request,
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND ,detail="Registration failed. Please check your details and try again.")
     return {"message": "Registration successful."}
 
+@auth.get("/me")
+def getuser(request: Request,
+            response: Response, 
+            current_user:User=Depends(jwthandler.get_current_user)):
+    return {
+        "authenticated": True,
+        "user": {
+            "username": current_user.username,
+            "email": current_user.email
+        }
+    }
+
+    
+

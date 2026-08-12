@@ -1,6 +1,7 @@
 # JWT 
 import uuid
 
+from fastapi.security import APIKeyHeader
 from jose import jwt, JWTError
 from fastapi import Depends, HTTPException, Request, status, Response
 from ..models.user import User
@@ -11,6 +12,7 @@ from ..database.session import get_db
 from typing import Annotated
 from sqlalchemy.ext.asyncio import  AsyncSession
 
+api_key_header_scheme = APIKeyHeader(name="X-USER-ID", auto_error=False)
 system = get_config()
 SECRET_KEY = system.secret_key.get_secret_value()
 ALGORITHM = system.algorithms
@@ -59,3 +61,30 @@ async def verify_token(token: str) -> TokenData:
 
 
 
+def get_current_user(
+    request: Request,
+    token: Annotated[str | None, Depends(api_key_header_scheme)], 
+    db: Annotated[AsyncSession, Depends(get_db)]
+) -> User:
+    
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Missing or invalid X-USER-ID authentication header",
+    )
+    
+    if not token:
+        raise credentials_exception
+
+    token_data = verify_token(token, credentials_exception)
+    
+    try:
+        user_uuid = uuid.UUID(token_data.user_id)
+    except ValueError:
+        raise credentials_exception
+
+    
+    user = db.query(User).filter(User.id == user_uuid).first()
+    if user is None:
+        raise credentials_exception  
+
+    return user
