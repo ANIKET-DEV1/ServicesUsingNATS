@@ -50,7 +50,7 @@ async def register(request: Request,
             event_type="user.registered",
             payload={
                 "token":token,
-                "url":"http://localhost:8001/verify-email?token={token}",
+                "url":f"http://localhost:8001/verify-email?token={token}",
                 "email":data["email"],
                 "message":"register successfull , Email verify"
             }

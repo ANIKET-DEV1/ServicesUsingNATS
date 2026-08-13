@@ -137,46 +137,64 @@ Swagger UI: **http://localhost:8000/docs**
 
 ---
 
-## Running with Docker (recommended)
+## Running with Docker
 
-### Prerequisites
+> **Prerequisite:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
 
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running
+---
 
-### Steps
+### Terminal 1 — Build & Run all services
 
 ```bash
-# 1. Clone the repo
-git clone <repo-url>
-cd tasktrams
-
-# 2. Copy and edit environment variables (optional — defaults work out of the box)
-cp .env.example .env
-
-# 3. Build and start all services
 docker compose up --build
-
-# 4. Open Swagger UI
-#    http://localhost:8000/docs
 ```
+
+This starts **all 5 containers** in the correct order:
+
+| Container | Role | Port |
+|-----------|------|------|
+| `tasktrams-postgres` | Database | `5432` |
+| `tasktrams-nats` | Message broker | `4222` |
+| `tasktrams-user-service` | Auth API | `8001` |
+| `tasktrams-notification-service` | NATS subscriber | — |
+| `tasktrams-api-gateway` | Public entry point | `8000` |
+
+Once all services are up, open **Swagger UI** in your browser:
+
+```
+http://localhost:8000/docs
+```
+
+---
+
+### Terminal 2 — Watch real-time NATS notifications
+
+Open a **second terminal** in the same folder and run:
+
+```bash
+docker compose logs -f notification-service
+```
+
+Now every time you call `/users/register`, `/users/login`, or `/users/me` from Swagger UI, the notification service will print the received event here.
+
+**Example output after a register:**
+```
+tasktrams-notification-service | Registration event received
+tasktrams-notification-service | Email: user@example.com
+tasktrams-notification-service | Verification token: eyJhbGc...
+tasktrams-notification-service | Verification url: http://localhost:8001/verify-email?token=...
+```
+
+---
 
 ### Stop everything
 
 ```bash
+# Stop all containers (keeps DB data)
 docker compose down
 
-# Also remove the postgres volume (wipes DB data):
+# Stop and wipe the database volume
 docker compose down -v
-```
-
-### Individual service logs
-
-```bash
-docker compose logs -f api-gateway
-docker compose logs -f user-service
-docker compose logs -f notification-service
-docker compose logs -f nats
-docker compose logs -f postgres
 ```
 
 ---
