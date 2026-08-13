@@ -41,11 +41,11 @@ async def verify_token(token: str ,credentials_exception) -> TokenData:
 
         if user_id is None:
             raise credentials_exception
-        # if not verified:
-        #     raise HTTPException(
-        #         status_code=status.HTTP_403_FORBIDDEN,
-        #         detail="Please verify Email. Check Your Mail"
-        #     )
+        if not verified:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Please verify Email. Check Your Mail"
+            )
 
         return TokenData(user_id=user_id,
                          time=iat)

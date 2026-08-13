@@ -7,13 +7,9 @@ from app.messaging.nats_client import (
 
 
 async def start_notification_service():
-
     nc = await connect_to_nats()
-
     await subscribe_to_events(nc)
-
     print("Notification Service is running...")
-
     while True:
         await asyncio.sleep(1)
 

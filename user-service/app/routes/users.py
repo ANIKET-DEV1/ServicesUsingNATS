@@ -20,8 +20,19 @@ async def login(request: Request,
                 response: Response,
                   auth_repo: for_Auth = Depends()):
     data = await auth_repo.login_user(cred)
-    
-    return data
+    await publish_event(
+            request.app.state.nats,
+            subject="user.logged_in",
+            event=EventEnvelope(
+                event_type="user.logged_in",
+                payload={
+                    "username":data["username"],
+                    "email":data["email"],
+                    "access_token":data["access_token"]
+                }
+            )
+        )
+    return {"access_token":data["access_token"]}
 
 @auth.post("/register")
 async def register(request: Request,
@@ -34,7 +45,8 @@ async def register(request: Request,
     token=create_email_verification_token(data={"user_id":str(data["user_id"])})
     await publish_event(
         request.app.state.nats,
-        EventEnvelope(
+        subject="user.registered",
+        event=EventEnvelope(
             event_type="user.registered",
             payload={
                 "token":token,
@@ -47,9 +59,20 @@ async def register(request: Request,
     return {"message": "Registration successful. Please Verify You Email"}
 
 @auth.get("/me")
-def getuser(request: Request,
+async def getuser(request: Request,
             response: Response, 
-            current_user:User=Depends(jwthandler.get_current_user)):
+            current_user:dict=Depends(jwthandler.get_current_user)):
+    await publish_event(
+        request.app.state.nats,
+        subject="user.get_user",
+        event=EventEnvelope(
+        event_type="user.get_user",
+        payload={
+                    "username":current_user["username"],
+                    "email":current_user['email'],
+                }
+            ))
+    
     return {
         "authenticated": True,
         "user":current_user
@@ -61,7 +84,7 @@ async def verify_email(request: Request,
     token: str = Query(..., description="The cryptographic token sent via email"),
     db: AsyncSession = Depends(get_db)
 ):
-    user_id=verify_email_token(token)
+    user_id=await verify_email_token(token)
     if not user_id:
         raise HTTPException(status_code=401,detail="The verification link is invalid or has expired. Please request a new one.")
     
@@ -72,5 +95,4 @@ async def verify_email(request: Request,
     return {"message": "Successfully verified email address."}
 
 
-    
 

@@ -17,7 +17,6 @@ async def publish_event(
     event: EventEnvelope,
 ):
     await nc.publish(
-        subject,
         event.model_dump_json().encode()
     )
 

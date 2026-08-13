@@ -92,9 +92,11 @@ async def get_user(db:AsyncSession,user_id:uuid.UUID):
                 detail="No account found with the provided email address."
             )
 
-        return {"username":user.username,
-                "email":user.email,
-                "is_verified":user.is_verified}
+        return {
+            "username":user.username,
+            "email":user.email,
+            "is_verified":user.is_verified
+            }
     except SQLAlchemyError:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

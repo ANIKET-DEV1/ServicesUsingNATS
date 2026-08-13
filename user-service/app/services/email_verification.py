@@ -34,23 +34,23 @@ def create_email_verification_token(data: dict, expires_delta: timedelta = timed
 async def verify_email_token(token: str ) -> TokenData:
     try: 
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: str | None = payload.get("sub")
+        user_id: str | None = payload.get("user_id")
         scope: str | None =payload.get("scope")
         if scope!="email-verification":
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-               detail="Invalid Token")
+               detail="Invalid Token the token is not for Email-verification")
         
         if user_id is None:
             raise  HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-               detail="Invalid Token ")
+               detail="Invalid Token , user didnt found")
 
         try:
             user_uuid = uuid.UUID(user_id)
         except ValueError:
             HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                detail="Invalid Token")
-        user = await get_user(db=Annotated[AsyncSession,get_db],user_id=user_uuid)   
-        return user
+  
+        return user_uuid
 
     except JWTError:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,

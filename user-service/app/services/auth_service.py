@@ -11,12 +11,16 @@ class for_Auth(BaseRepository):
         user= await crud_auth.login(self.db,user_data=credential)
         if not user:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Invalid username or password.")
+        if not user.is_verified:
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="User is Not Verifed please Verify")
         token_payload = {
             "sub": str(user.id),
             "verified":user.is_verified,
         }
         access_token= jwthandler.create_access_token(data=token_payload)
         return {
+            "username":user.username,
+            "email":user.email,
             "access_token": access_token,
             "token_type": "bearer"
             }
