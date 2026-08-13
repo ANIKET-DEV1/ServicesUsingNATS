@@ -32,7 +32,7 @@ A **Python microservices** project built with **FastAPI**, **PostgreSQL**, **NAT
 │  PostgreSQL  │         │      NATS Broker  :4222       │
 │    :5432     │         │   (nats:2.10-alpine)          │
 │  user_service│         └──────────────┬────────────────┘
-│  notif_svc   │                        │ subscribe
+                                        │ subscribe
 └──────────────┘                        ▼
                           ┌─────────────────────────────┐
                           │   NOTIFICATION SERVICE      │
