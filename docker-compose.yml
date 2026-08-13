@@ -1,28 +1,78 @@
-version: '3.8'
+
 services:
+
+  # ─── Infrastructure ──────────────────────────────────────────────────────────
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: tasktrams-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: AWSMX
+      POSTGRES_DB: user_service
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   nats:
-    image: nats:latest
+    image: nats:2.10-alpine
+    container_name: tasktrams-nats
+    restart: unless-stopped
     ports:
       - "4222:4222"
-
-  api-gateway:
-    build: ./api-gateway
-    ports:
-      - "8000:8000"
-    depends_on:
-      - user-service
-      - notification-service
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 4222 || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
 
   user-service:
     build: ./user-service
+    container_name: tasktrams-user-service
+    restart: unless-stopped
     ports:
       - "8001:8001"
     environment:
-      - NATS_URL=nats://nats:4222
+      USER_DATABASE_URL: "postgresql+asyncpg://postgres:AWSMX@postgres:5432/user_service"
+      NOTIFICATION_DATABASE_URL: "postgresql+asyncpg://postgres:AWSMX@postgres:5432/user_service"
+      SECRET_KEY: "asdfghjkwertyucvbghtygsdbuybduay562i763928, /32 -j8x3"
+      ACCESS_TOKEN_EXPIRE_MINUTE: "60"
+      ALGORITHMS: "HS256"
+      NATS_URL: "nats://nats:4222"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
 
   notification-service:
     build: ./notification-service
-    ports:
-      - "8002:8002"
+    container_name: tasktrams-notification-service
+    restart: unless-stopped
     environment:
-      - NATS_URL=nats://nats:4222
+      NATS_URL: "nats://nats:4222"
+    depends_on:
+      nats:
+        condition: service_healthy
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: tasktrams-api-gateway
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      USER_SERVICE_URL: "http://user-service:8001"
+    depends_on:
+      - user-service
+
+volumes:
+  postgres_data:

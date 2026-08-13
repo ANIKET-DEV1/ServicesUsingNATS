@@ -1,7 +1,8 @@
 import nats
 import json
+import os
 
-NATS_URL = "nats://localhost:4222"
+NATS_URL = os.environ.get("NATS_URL", "nats://localhost:4222")
 
 
 async def connect_to_nats():

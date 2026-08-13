@@ -1,7 +1,8 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+# api-gateway/app/config.py → parent = api-gateway/app → parent = api-gateway → parent = project root
+BASE_DIR = Path(__file__).resolve().parent.parent.parent  # project root
 
 
 class GatewaySettings(BaseSettings):

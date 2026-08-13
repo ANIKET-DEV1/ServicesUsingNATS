@@ -1,8 +1,9 @@
 import nats
 import json
+import os
 from ..schemas.event import EventEnvelope
 
-NATS_URL = "nats://localhost:4222"
+NATS_URL = os.environ.get("NATS_URL", "nats://localhost:4222")
 
 
 async def connect_to_nats():
@@ -17,6 +18,7 @@ async def publish_event(
     event: EventEnvelope,
 ):
     await nc.publish(
+        subject,
         event.model_dump_json().encode()
     )
 
