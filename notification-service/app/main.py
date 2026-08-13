@@ -10,8 +10,16 @@ async def start_notification_service():
     nc = await connect_to_nats()
     await subscribe_to_events(nc)
     print("Notification Service is running...")
-    while True:
-        await asyncio.sleep(1)
+    try:
+        while True:
+            await asyncio.sleep(1)
+
+    except asyncio.CancelledError:
+        print("Notification Service shutting down...")
+
+    finally:
+        await nc.drain()
+        print("NATS connection closed")
 
 
 if __name__ == "__main__":

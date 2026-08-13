@@ -1,0 +1,1 @@
+# notification-service messaging package
